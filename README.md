@@ -14,7 +14,7 @@ code for you.
    setters, or properties.
  * Eliminate anonymous inner-classes for listeners by annotating methods with `@OnClick` and others.
  * Eliminate resource lookups by using resource annotations on fields.
- * Eliminate `setContentView` in Activity or Dialog. While `@BindLayout` is *NOT supported* in Fragment or Adapter currently.
+ * Eliminate `setContentView` for Activity or Dialog. While `@BindLayout` is **NOT supported** for Fragment or Adapter currently.
 ```java
 @BindLayout(R.layout.simple_activity)
 class ExampleActivity extends Activity {
