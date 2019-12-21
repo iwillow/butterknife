@@ -1,6 +1,8 @@
 package com.example.butterknife.library;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -9,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.Action;
+import butterknife.BindLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -22,7 +25,7 @@ import static com.example.butterknife.R.id.titleTv;
 import java.util.List;
 
 import static android.widget.Toast.LENGTH_SHORT;
-
+@BindLayout(R.layout.simple_activity)
 public class SimpleActivity extends Activity {
   private static final Action<View> ALPHA_FADE = (view, index) -> {
     AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
@@ -47,8 +50,10 @@ public class SimpleActivity extends Activity {
   private SimpleAdapter adapter;
 
   @OnClick(R.id.hello) void sayHello() {
-    Toast.makeText(this, "Hello, views!", LENGTH_SHORT).show();
-    ViewCollections.run(headerViews, ALPHA_FADE);
+    //Toast.makeText(this, "Hello, views!", LENGTH_SHORT).show();
+    //ViewCollections.run(headerViews, ALPHA_FADE);
+    Dialog dialog = new MyDialog(this);
+    dialog.show();
   }
 
   @OnLongClick(R.id.hello) boolean sayGetOffMe() {
@@ -65,6 +70,8 @@ public class SimpleActivity extends Activity {
     setContentView(R.layout.simple_activity);
     ButterKnife.bind(this);
 
+
+
     // Contrived code to use the bound fields.
     title.setText(butterKnife);
     subtitle.setText(fieldMethod);
@@ -73,5 +80,8 @@ public class SimpleActivity extends Activity {
 
     adapter = new SimpleAdapter(this);
     listOfThings.setAdapter(adapter);
+    getFragmentManager().beginTransaction()
+            .add(new Fragment(),"xxx")
+            .commit();
   }
 }

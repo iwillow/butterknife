@@ -10,6 +10,7 @@ import butterknife.BindDrawable;
 import butterknife.BindFloat;
 import butterknife.BindFont;
 import butterknife.BindInt;
+import butterknife.BindLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -199,6 +200,7 @@ public final class ButterKnifeProcessor extends AbstractProcessor {
     annotations.add(BindFont.class);
     annotations.add(BindInt.class);
     annotations.add(BindString.class);
+    annotations.add(BindLayout.class);
     annotations.add(BindView.class);
     annotations.add(BindViews.class);
     annotations.addAll(LISTENERS);
@@ -338,6 +340,16 @@ public final class ButterKnifeProcessor extends AbstractProcessor {
       }
     }
 
+    //Process each @BindLayout element.
+    for (Element element : env.getElementsAnnotatedWith(BindLayout.class)) {
+      try {
+        parseBindLayout(element, builderMap);
+      } catch (Exception e) {
+        logParsingError(element, BindLayout.class, e);
+      }
+    }
+
+
     // Process each @BindView element.
     for (Element element : env.getElementsAnnotatedWith(BindView.class)) {
       // we don't SuperficialValidation.validateElement(element)
@@ -457,6 +469,36 @@ public final class ButterKnifeProcessor extends AbstractProcessor {
     }
 
     return false;
+  }
+
+  private void parseBindLayout(Element element, Map<TypeElement, BindingSet.Builder> builderMap){
+    TypeElement typeElement =(TypeElement) element;
+    TypeMirror elementType = element.asType();
+    boolean isActivity = isSubtypeOfType(elementType, ACTIVITY_TYPE);
+    boolean isDialog = isSubtypeOfType(elementType, DIALOG_TYPE);
+    Name simpleName = element.getSimpleName();
+    boolean hasError = !isActivity && !isDialog;
+    if (hasError) {
+      if (elementType.getKind() == TypeKind.ERROR) {
+        note(element, "class @%s  with unresolved type (%s) "
+                        + "must be annotated on the sub class of Activity or Dialog . (%s)",
+                BindLayout.class.getSimpleName(), elementType, simpleName);
+      } else {
+        error(element, "@%s must be annotated on the sub class of Activity or Dialog ,(%s)",
+                BindView.class.getSimpleName(), simpleName);
+      }
+    }
+
+    if(hasError){
+       return;
+    }
+    int layoutId = element.getAnnotation(BindLayout.class).value();
+    Id id = elementToId(element, BindLayout.class, layoutId);
+    BindingSet.Builder builder = builderMap.get(typeElement);
+    if(builder == null){
+      builder = getOrCreateBindingBuilder(builderMap, typeElement);
+    }
+    builder.setBindLayout(new LayoutBinding(id));
   }
 
   private void parseBindView(Element element, Map<TypeElement, BindingSet.Builder> builderMap,

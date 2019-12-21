@@ -56,6 +56,8 @@ final class BindingSet implements BindingInformationProvider {
       ClassName.get("androidx.core.content", "ContextCompat");
   static final ClassName ANIMATION_UTILS =
           ClassName.get("android.view.animation", "AnimationUtils");
+  private static final ClassName VIEW_GROUP = ClassName.get("android.view", "ViewGroup");
+  private static final ClassName BIND_LAYOUT = ClassName.get("butterknife", "BindLayout");
 
   private final TypeName targetTypeName;
   private final ClassName bindingClassName;
@@ -68,6 +70,7 @@ final class BindingSet implements BindingInformationProvider {
   private final ImmutableList<FieldCollectionViewBinding> collectionBindings;
   private final ImmutableList<ResourceBinding> resourceBindings;
   private final @Nullable BindingInformationProvider parentBinding;
+  private LayoutBinding mLayoutBinding;
 
   private BindingSet(
       TypeName targetTypeName, ClassName bindingClassName, TypeElement enclosingElement,
@@ -137,6 +140,10 @@ final class BindingSet implements BindingInformationProvider {
     }
 
     return result.build();
+  }
+
+  private void setLayoutBinding(LayoutBinding layoutBinding) {
+    this.mLayoutBinding = layoutBinding;
   }
 
   private MethodSpec createBindingViewDelegateConstructor() {
@@ -234,6 +241,15 @@ final class BindingSet implements BindingInformationProvider {
     }
     if (hasTargetField()) {
       constructor.addStatement("this.target = target");
+      constructor.addCode("\n");
+    }
+
+    if (mLayoutBinding != null && mLayoutBinding.id != null && (isActivity || isDialog)) {
+      constructor.addComment("setContentView view with @BindLayout");
+      constructor.addStatement("$T viewGroup = target.getWindow().getDecorView().findViewById(android.R.id.content);", VIEW_GROUP);
+      constructor.beginControlFlow("if (viewGroup != null && viewGroup.getChildCount() == 0 && target.getClass().getAnnotation($T.class) != null)", BIND_LAYOUT);
+      constructor.addStatement("target.setContentView($L)", mLayoutBinding.id.value);
+      constructor.endControlFlow();
       constructor.addCode("\n");
     }
 
@@ -726,6 +742,7 @@ final class BindingSet implements BindingInformationProvider {
     private final boolean isView;
     private final boolean isActivity;
     private final boolean isDialog;
+    private LayoutBinding layoutBinding;
 
     private @Nullable BindingInformationProvider parentBinding;
 
@@ -775,6 +792,10 @@ final class BindingSet implements BindingInformationProvider {
       this.parentBinding = parent;
     }
 
+    void setBindLayout(LayoutBinding layoutBinding){
+       this.layoutBinding = layoutBinding;
+    }
+
     @Nullable String findExistingBindingName(Id id) {
       ViewBinding.Builder builder = viewIdMap.get(id);
       if (builder == null) {
@@ -801,9 +822,11 @@ final class BindingSet implements BindingInformationProvider {
       for (ViewBinding.Builder builder : viewIdMap.values()) {
         viewBindings.add(builder.build());
       }
-      return new BindingSet(targetTypeName, bindingClassName, enclosingElement, isFinal, isView,
-          isActivity, isDialog, viewBindings.build(), collectionBindings.build(),
-          resourceBindings.build(), parentBinding);
+      BindingSet bindingSet = new BindingSet(targetTypeName, bindingClassName, enclosingElement, isFinal, isView,
+              isActivity, isDialog, viewBindings.build(), collectionBindings.build(),
+              resourceBindings.build(), parentBinding);
+      bindingSet.setLayoutBinding(layoutBinding);
+      return bindingSet;
     }
   }
 }
