@@ -2,18 +2,13 @@ package butterknife;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
@@ -87,9 +82,7 @@ public final class ButterKnife {
     @VisibleForTesting
     static final Map<Class<?>, Constructor<? extends Unbinder>> BINDINGS = new LinkedHashMap<>();
 
-    /**
-     * Control whether debug logging is enabled.
-     */
+    /** Control whether debug logging is enabled. */
     public static void setDebug(boolean debug) {
         ButterKnife.debug = debug;
     }
@@ -100,30 +93,10 @@ public final class ButterKnife {
      *
      * @param target Target activity for view binding.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull Activity target) {
         View sourceView = target.getWindow().getDecorView();
-        //injectActivityContentViewIfNeeded(target);
         return bind(target, sourceView);
-    }
-
-    private static void injectActivityContentViewIfNeeded(@NonNull Activity target) {
-        ViewGroup viewGroup = target.getWindow().getDecorView().findViewById(android.R.id.content);
-        if (viewGroup != null && viewGroup.getChildCount() == 0
-                && target.getClass().getAnnotation(BindLayout.class) != null) {
-            BindLayout bindLayout = target.getClass().getAnnotation(BindLayout.class);
-            target.setContentView(bindLayout.value());
-        }
-    }
-
-    private static void injectDialogContentViewIfNeeded(@NonNull Dialog target) {
-        ViewGroup viewGroup = target.getWindow().getDecorView().findViewById(android.R.id.content);
-        if (viewGroup != null && viewGroup.getChildCount() == 0
-                && target.getClass().getAnnotation(BindLayout.class) != null) {
-            BindLayout bindLayout = target.getClass().getAnnotation(BindLayout.class);
-            target.setContentView(bindLayout.value());
-        }
     }
 
     /**
@@ -132,8 +105,7 @@ public final class ButterKnife {
      *
      * @param target Target view for view binding.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull View target) {
         return bind(target, target);
     }
@@ -144,14 +116,11 @@ public final class ButterKnife {
      *
      * @param target Target dialog for view binding.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull Dialog target) {
         View sourceView = target.getWindow().getDecorView();
-        //injectDialogContentViewIfNeeded(target);
         return bind(target, sourceView);
     }
-
 
     /**
      * BindView annotated fields and methods in the specified {@code target} using the {@code source}
@@ -160,11 +129,9 @@ public final class ButterKnife {
      * @param target Target class for view binding.
      * @param source Activity on which IDs will be looked up.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull Object target, @NonNull Activity source) {
         View sourceView = source.getWindow().getDecorView();
-        //injectActivityContentViewIfNeeded(source);
         return bind(target, sourceView);
     }
 
@@ -175,11 +142,9 @@ public final class ButterKnife {
      * @param target Target class for view binding.
      * @param source Dialog on which IDs will be looked up.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull Object target, @NonNull Dialog source) {
         View sourceView = source.getWindow().getDecorView();
-        //injectDialogContentViewIfNeeded(source);
         return bind(target, sourceView);
     }
 
@@ -190,8 +155,7 @@ public final class ButterKnife {
      * @param target Target class for view binding.
      * @param source View root on which IDs will be looked up.
      */
-    @NonNull
-    @UiThread
+    @NonNull @UiThread
     public static Unbinder bind(@NonNull Object target, @NonNull View source) {
         Class<?> targetClass = target.getClass();
         if (debug) Log.d(TAG, "Looking up binding for " + targetClass.getName());
@@ -220,9 +184,7 @@ public final class ButterKnife {
         }
     }
 
-    @Nullable
-    @CheckResult
-    @UiThread
+    @Nullable @CheckResult @UiThread
     private static Constructor<? extends Unbinder> findBindingConstructorForClass(Class<?> cls) {
         Constructor<? extends Unbinder> bindingCtor = BINDINGS.get(cls);
         if (bindingCtor != null || BINDINGS.containsKey(cls)) {
