@@ -8,13 +8,12 @@ Butter Knife
 
 Field and method binding for Android views which uses annotation processing to generate boilerplate
 code for you.
-
+ * Eliminate `setContentView` calls by using `@BindView` on class Activity or Dialog. While `@BindLayout` is **NOT supported** for Fragment or Adapter currently.see [how to do it](https://www.jianshu.com/p/2fc3b209c987)
  * Eliminate `findViewById` calls by using `@BindView` on fields.
  * Group multiple views in a list or array. Operate on all of them at once with actions,
    setters, or properties.
  * Eliminate anonymous inner-classes for listeners by annotating methods with `@OnClick` and others.
  * Eliminate resource lookups by using resource annotations on fields.
- * Eliminate `setContentView` for Activity or Dialog. While `@BindLayout` is **NOT supported** for Fragment or Adapter currently.
 ```java
 @BindLayout(R.layout.simple_activity)
 class ExampleActivity extends Activity {
